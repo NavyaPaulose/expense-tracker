@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+
+    <div class="app-container">
+      <aside class="sidebar">
+  <div class="sidebar-top">
+    <h1 class="brand-title">Expense Tracker</h1>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-link active">Dashboard</a>
+      <a href="#" class="nav-link">Transactions</a>
+      <a href="#" class="nav-link">Analytics</a>
+      <a href="#" class="nav-link">Settings</a>
+    </nav>
+  </div>
+  <div class="sidebar-footer">
+    <p>&copy; 2026 expense tracker</p>
+  </div>
+</aside>
+        <main class="main-content">
+            <div class="cards-grid">
+                <div class="card">
+                    <p class="card-title">Net Balance</p>
+                    <h1 class="card-amount">0</h1>
+
+                </div>
+                <div class="card">
+                    <p class="card-title">Income</p>
+                    <h1 class="card-amount">0</h1>
+
+                </div>
+                <div class="card">
+                    <p class="card-title">Expense</p>
+                    <h1 class="card-amount">0</h1>
+
+                </div>
+            </div>
+<div class="dashboard-grid">
+            <div class="content-box">
+                <form class="transaction-form">
+                    <input type="text" placeholder="enter here" class="form-input">
+                    <input type="number" placeholder="amount" class="form-input">
+                    <select class="form-select" defaultValue="">
+                        <option value="" disabled selected>Type</option>
+                        <option value="income">Income</option>
+                        <option value="expense">Expense</option>
+                    </select>
+
+                    <select class="form-select">
+                        <option value="" disabled selected>Category</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Salary">Salary</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Others">Others</option>
+                    </select>
+
+           <button type="submit" class="submit-btn add-btn">add</button>
+<button type="submit" class="submit-btn update-btn" style="display: none;">update</button>
+
+                </form>
+
+                <div class="table-card">
+                    <div class="table-wrapper">
+                        <table class="transaction-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Description</th>
+                                    <th>Type</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- analytics -->
+            <div class="chart-card" style="margin-top: 20px;padding: 20px; border-radius: 8px; background-color: white;">
+                <h3 style="text-align:center ;">Expense Breaking by Category</h3>
+                <div style="max-width: 400px; margin-top: 10px; ">
+                    <canvas id="categoryChart"></canvas>
+                </div>
+
+            </div>
+            </div>
+        </main>
+    </div>
+
+
+</body>
+<script>
+    const dummyData = [
+        { id: 1, description: 'Monthly Salary', amount: 5000, type: 'income', category: 'Salary' },
+        { id: 2, description: 'Grocery Shopping', amount: 250, type: 'expense', category: 'Shopping' },
+        { id: 3, description: 'Electricity Bill', amount: 150, type: 'expense', category: 'Bills' },
+        { id: 4, description: 'Movie Night', amount: 50, type: 'expense', category: 'Entertainment' }
+    ];
+    let transactions = JSON.parse(localStorage.getItem('transactions')) || []
+
+    let editId = null;
+    let categoryChartInstance = null;
+
+    const form = document.querySelector('.transaction-form');
+    const descriptionInput = form.querySelectorAll('.form-input')[0];
+    const amountInput = form.querySelectorAll('.form-input')[1];
+    const typeSelect = form.querySelectorAll('.form-select')[0]
+    const categorySelect = form.querySelectorAll('.form-select')[1];
+   const addBtn = form.querySelector('.add-btn');
+const updateBtn = form.querySelector('.update-btn');
+
+    const netbalance = document.querySelectorAll('.card-amount')[0]
+    const incomeEl = document.querySelectorAll('.card-amount')[1]
+    const expenseEl = document.querySelectorAll('.card-amount')[2]
+    const tableBody = document.querySelector('.transaction-table tbody')
+
+
+
+    function saveToLocalStorage() {
+        localStorage.setItem('transactions', JSON.stringify(transactions))
+    }
+
+    function updateSummary() {
+        const income = transactions.filter(t => t.type === 'income')
+            .reduce((sum, t) => sum + t.amount, 0)
+
+        const expense = transactions.filter(t => t.type === 'expense')
+            .reduce((sum, t) => sum + t.amount, 0)
+        const balance = income - expense
+
+        incomeEl.textContent = `${income.toFixed(2)}`;
+        expenseEl.textContent = `${expense.toFixed(2)}`;
+        netbalance.textContent = `${balance.toFixed(2)}`;
+    }
+
+    function resetForm() {
+        form.reset();
+        typeSelect.selectedIndex = 0;
+        categorySelect.selectedIndex = 0
+        editId = null;
+        if (addBtn) addBtn.style.display = 'inline-block';
+        if (updateBtn) updateBtn.style.display = 'none';
+    }
+
+    function renderTransactions() {
+        tableBody.innerHTML = '';
+
+        if (transactions.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="6" style="text-align: center;">No transactions added yet.</td></tr>`;
+            return;
+        }
+
+        transactions.forEach((transaction) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+            <td class="id-col">${transaction.id}</td>
+            <td class="desc-col">${transaction.description}</td>
+            <td>${transaction.type}</td>
+            <td>${transaction.category || '-'}</td>
+            <td>${transaction.amount.toFixed(2)}</td>
+            <td>
+                <div>
+                    <button type="button" class="action-btn edit-btn" onclick="prepareEdit(${transaction.id})">Edit</button>
+                    <button type="button" class="action-btn delete-btn" onclick="deleteTransaction(${transaction.id})">Delete</button>
+                </div>
+            </td>
+        `;
+            tableBody.appendChild(row);
+        });
+    }
+    function updateChart() {
+        const ctx = document.getElementById('categoryChart').getContext('2d')
+
+        const categoryTotals = {};
+        transactions.filter(t => t.type == 'expense').forEach(t => {
+            const cat = t.category || 'Others';
+            categoryTotals[cat] = (categoryTotals[cat] || 0) + t.amount
+        })
+
+        const labels = Object.keys(categoryTotals);
+        const data = Object.values(categoryTotals);
+
+        if (categoryChartInstance) {
+            categoryChartInstance.destroy()
+        }
+        categoryChartInstance = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: data,
+                    backgroundColor: [
+                        '#FF6384', '#36A2EB', '#FFCE56',
+                        '#4BC0C0', '#9966FF', '#FF9F40'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+
+        })
+
+    }
+
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const description = descriptionInput.value.trim();
+        const amount = parseFloat(amountInput.value);
+        const type = typeSelect.value;
+        const category = categorySelect.value;
+
+        if (!description || isNaN(amount) || amount <= 0 || !type) {
+            alert('please fill out all required fields correctly')
+            return;
+        }
+        if (editId !== null) {
+            transactions = transactions.map(t => {
+                if (t.id === editId) {
+                    return { ...t, description, amount, type, category };
+                }
+                return t;
+            });
+
+        } else {
+            const newId = transactions.length > 0
+                ? Math.max(...transactions.map(t => t.id)) + 1
+                : 1;
+            const newTransaction = {
+                id: newId,
+                description,
+                amount,
+                type,
+                category
+            };
+            transactions.push(newTransaction)
+        }
+        saveToLocalStorage();
+        renderTransactions();
+        updateSummary();
+        updateChart();
+        resetForm()
+    });
+
+    window.prepareEdit = function (id) {
+        const transaction = transactions.find(t => t.id === id)
+        if (!transaction) return;
+
+        descriptionInput.value = transaction.description;
+        amountInput.value = transaction.amount;
+        typeSelect.value = transaction.type;
+        categorySelect.value = transaction.category;
+
+        editId = id;
+        addBtn.style.display = 'none';
+        updateBtn.style.display = 'inline-block';
+    }
+    window.deleteTransaction = function (id) {
+        transactions = transactions.filter(t => t.id !== id);
+        saveToLocalStorage();
+        renderTransactions()
+        updateSummary();
+        updateChart();
+        if (editId == id) {
+            resetForm();
+        }
+    }
+
+    function init() {
+        if (!localStorage.getItem('transactions') || transactions.length === 0) {
+transactions = [...dummyData];
+            saveToLocalStorage();
+        }
+        renderTransactions();
+        updateSummary()
+        updateChart()
+    }
+    document.addEventListener('DOMContentLoaded', init);
+</script>
+
+</html>
