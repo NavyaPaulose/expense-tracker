@@ -12,20 +12,20 @@
 <body>
 
     <div class="app-container">
-      <aside class="sidebar">
-  <div class="sidebar-top">
-    <h1 class="brand-title">Expense Tracker</h1>
-    <nav class="sidebar-nav">
-      <a href="#" class="nav-link active">Dashboard</a>
-      <a href="#" class="nav-link">Transactions</a>
-      <a href="#" class="nav-link">Analytics</a>
-      <a href="#" class="nav-link">Settings</a>
-    </nav>
-  </div>
-  <div class="sidebar-footer">
-    <p>&copy; 2026 expense tracker</p>
-  </div>
-</aside>
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <h1 class="brand-title">Expense Tracker</h1>
+                <nav class="sidebar-nav">
+                    <a href="#" class="nav-link active">Dashboard</a>
+                    <a href="#" class="nav-link">Transactions</a>
+                    <a href="#" class="nav-link">Analytics</a>
+                    <a href="#" class="nav-link">Settings</a>
+                </nav>
+            </div>
+            <div class="sidebar-footer">
+                <p>&copy; 2026 expense tracker</p>
+            </div>
+        </aside>
         <main class="main-content">
             <div class="cards-grid">
                 <div class="card">
@@ -44,62 +44,63 @@
 
                 </div>
             </div>
-<div class="dashboard-grid">
-            <div class="content-box">
-                <form class="transaction-form">
-                    <input type="text" placeholder="enter here" class="form-input">
-                    <input type="number" placeholder="amount" class="form-input">
-                    <select class="form-select" defaultValue="">
-                        <option value="" disabled selected>Type</option>
-                        <option value="income">Income</option>
-                        <option value="expense">Expense</option>
-                    </select>
+            <div class="dashboard-grid">
+                <div class="content-box">
+                    <form class="transaction-form">
+                        <input type="text" placeholder="Description..." class="form-input">
+                        <input type="number" placeholder="Amount" class="form-input">
+                        <select class="form-select" defaultValue="">
+                            <option value="" disabled selected>Type</option>
+                            <option value="income">Income</option>
+                            <option value="expense">Expense</option>
+                        </select>
 
-                    <select class="form-select">
-                        <option value="" disabled selected>Category</option>
-                        <option value="Shopping">Shopping</option>
-                        <option value="Salary">Salary</option>
-                        <option value="Bills">Bills</option>
-                        <option value="Entertainment">Entertainment</option>
-                        <option value="Others">Others</option>
-                    </select>
+                        <select class="form-select">
+                            <option value="" disabled selected>Category</option>
+                            <option value="Shopping">Shopping</option>
+                            <option value="Salary">Salary</option>
+                            <option value="Bills">Bills</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Others">Others</option>
+                        </select>
 
-           <button type="submit" class="submit-btn add-btn">add</button>
-<button type="submit" class="submit-btn update-btn" style="display: none;">update</button>
+                        <button type="submit" class="submit-btn add-btn">add</button>
+                        <button type="submit" class="submit-btn update-btn" style="display: none;">update</button>
 
-                </form>
+                    </form>
 
-                <div class="table-card">
-                    <div class="table-wrapper">
-                        <table class="transaction-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Description</th>
-                                    <th>Type</th>
-                                    <th>Category</th>
-                                    <th>Amount</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            </tbody>
+                    <div class="table-card">
+                        <div class="table-wrapper">
+                            <table class="transaction-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Description</th>
+                                        <th>Type</th>
+                                        <th>Category</th>
+                                        <th>Amount</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                </tbody>
 
-                        </table>
+                            </table>
 
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- analytics -->
+                <div class="chart-card"
+                    style="margin-top: 20px;padding: 20px; border-radius: 8px; background-color: white;">
+                    <h3 style="text-align:center ;">Expense Breaking by Category</h3>
+                    <div style="max-width: 400px; margin-top: 10px; ">
+                        <canvas id="categoryChart"></canvas>
                     </div>
 
                 </div>
-            </div>
-
-            <!-- analytics -->
-            <div class="chart-card" style="margin-top: 20px;padding: 20px; border-radius: 8px; background-color: white;">
-                <h3 style="text-align:center ;">Expense Breaking by Category</h3>
-                <div style="max-width: 400px; margin-top: 10px; ">
-                    <canvas id="categoryChart"></canvas>
-                </div>
-
-            </div>
             </div>
         </main>
     </div>
@@ -123,8 +124,8 @@
     const amountInput = form.querySelectorAll('.form-input')[1];
     const typeSelect = form.querySelectorAll('.form-select')[0]
     const categorySelect = form.querySelectorAll('.form-select')[1];
-   const addBtn = form.querySelector('.add-btn');
-const updateBtn = form.querySelector('.update-btn');
+    const addBtn = form.querySelector('.add-btn');
+    const updateBtn = form.querySelector('.update-btn');
 
     const netbalance = document.querySelectorAll('.card-amount')[0]
     const incomeEl = document.querySelectorAll('.card-amount')[1]
@@ -292,7 +293,7 @@ const updateBtn = form.querySelector('.update-btn');
 
     function init() {
         if (!localStorage.getItem('transactions') || transactions.length === 0) {
-transactions = [...dummyData];
+            transactions = [...dummyData];
             saveToLocalStorage();
         }
         renderTransactions();
